@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fortnite Command Center</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap">
+<style>
+:root{--bg:#0f1626;--bg2:#161f33;--card:#1b2640;--line:#2a3756;--fg:#eef2fa;--mute:#93a0bb;--acc:#2ee6ff;
+--common:#8a96ad;--uncommon:#4cc25a;--rare:#3b8bff;--epic:#b04dff;--legendary:#ff9a2e;--mythic:#ffd24a;--icon:#3fd4d4;--ok:#4ade80;--warn:#ffb020;--bad:#ff5c5c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 Barlow,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:"Barlow Condensed",Impact,sans-serif;text-transform:uppercase;letter-spacing:.02em;margin:0;text-wrap:balance}
+a{color:var(--fg)}
+header{position:sticky;top:0;z-index:5;background:var(--bg2);border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:baseline;gap:10px;padding:10px 14px 4px;flex-wrap:wrap}
+h1{font-size:26px;font-weight:800} h1 small{color:var(--mute);font-size:13px;letter-spacing:.08em;margin-left:6px;font-weight:600}
+.upd{margin-left:auto;color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums}
+nav{display:flex;gap:2px;padding:0 8px;overflow-x:auto}
+nav button{flex:1;min-width:84px;background:none;border:0;border-bottom:3px solid transparent;color:var(--mute);padding:10px 8px;font:600 15px "Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+nav button[aria-selected=true]{color:var(--fg);border-color:var(--acc)}
+main{padding:14px;max-width:1100px;margin:0 auto}
+.hide{display:none!important}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:600 13px Barlow,sans-serif;color:var(--mute)}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--mute)} .pill.ok i{background:var(--ok)} .pill.warn i{background:var(--warn)} .pill.bad i{background:var(--bad)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.tile .k{color:var(--mute);font:600 12px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.tile .v{font:600 26px "Barlow Condensed",sans-serif;font-variant-numeric:tabular-nums;line-height:1.1;margin-top:2px} .tile .s{color:var(--mute);font-size:13px}
+h2.sec{font-size:20px;font-weight:600;margin:18px 0 8px;display:flex;align-items:baseline;gap:10px} h2.sec small{color:var(--mute);font:600 13px Barlow,sans-serif;letter-spacing:.06em}
+.list{display:flex;flex-direction:column;gap:6px}
+.item{display:grid;grid-template-columns:1fr auto;gap:4px 10px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 12px;text-decoration:none}
+.item.thumb{grid-template-columns:72px 1fr auto}
+.item img{width:72px;height:54px;object-fit:cover;border-radius:4px;grid-row:span 2;background:var(--bg)}
+.item .t{font-weight:600;line-height:1.25} .item .m{color:var(--mute);font-size:13px;grid-column:span 1}
+.item .w{color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.src{font:600 11px Barlow,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:4px;background:var(--bg);border:1px solid var(--line);color:var(--mute);margin-right:6px}
+.src.leaks{color:var(--epic);border-color:var(--epic)} .src.video{color:var(--bad);border-color:var(--bad)} .src.status{color:var(--warn);border-color:var(--warn)} .src.news{color:var(--acc);border-color:var(--acc)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.chip{background:var(--bg);border:1px solid var(--line);color:var(--mute);border-radius:999px;padding:5px 12px;font:600 13px Barlow,sans-serif;cursor:pointer}
+.chip[aria-pressed=true]{color:var(--fg);border-color:var(--acc);background:#12314a}
+input.q{flex:1;min-width:140px;background:var(--bg);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:7px 10px;font:inherit}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-top:3px solid var(--rc,var(--line));border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:6px;text-align:center}
+.card img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;background:var(--bg)}
+.card h3{font-size:16px;font-weight:600;line-height:1.1;min-height:2.2em;display:flex;align-items:center;justify-content:center}
+.card .p{font:600 15px "Barlow Condensed",sans-serif;font-variant-numeric:tabular-nums;color:var(--mythic)} .card .p s{color:var(--mute);margin-right:6px;font-weight:400}
+.card .meta{color:var(--mute);font-size:12px}
+.badge{position:absolute;top:8px;left:8px;font:800 11px "Barlow Condensed",sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:var(--acc);color:#0b0f1a}
+.badge.leaving{background:var(--bad);color:#fff} .badge.back{background:var(--legendary);color:#0b0f1a}
+.star{position:absolute;top:4px;right:6px;background:none;border:0;color:var(--mute);font-size:20px;cursor:pointer;line-height:1} .star[aria-pressed=true]{color:var(--mythic)}
+.card.wish{box-shadow:0 0 0 1px var(--mythic),0 0 18px -6px var(--mythic)}
+.tg{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.tg button{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--mute);border-radius:6px;padding:7px 4px;font:600 13px Barlow,sans-serif;cursor:pointer}
+.tg button[aria-pressed=true]{color:#0b0f1a;background:var(--acc);border-color:var(--acc)} .tg button.m[aria-pressed=true]{background:var(--mythic);border-color:var(--mythic)}
+.card.done img{outline:2px solid var(--ok)}
+.bar{height:6px;background:var(--line);border-radius:3px;margin:6px 0 12px;overflow:hidden} .bar i{display:block;height:100%;background:var(--acc)}
+.note{color:var(--mute);font-size:13px;max-width:70ch}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+ <div class="top"><h1>Command Center<small>Fortnite · Chapter 7 · Season 4</small></h1><span class="upd" id="upd">loading</span></div>
+ <nav role="tablist">
+  <button role="tab" data-tab="today" aria-selected="true">Today</button>
+  <button role="tab" data-tab="shop" aria-selected="false">Shop</button>
+  <button role="tab" data-tab="feed" aria-selected="false">Leaks + News</button>
+  <button role="tab" data-tab="trackers" aria-selected="false">Trackers</button>
+ </nav>
+</header>
+<main>
+ <section id="tab-today">
+  <div class="row" id="statusRow"></div>
+  <div class="tiles" id="tiles"></div>
+  <div id="wishToday"></div>
+  <h2 class="sec">New in the shop today <small id="newCount"></small></h2>
+  <div class="grid" id="newToday"></div>
+  <h2 class="sec">Last 24 hours <small>top headlines</small></h2>
+  <div class="list" id="headlines"></div>
+  <h2 class="sec">Epic in-game news</h2>
+  <div class="list" id="epicNews"></div>
+ </section>
+ <section id="tab-shop" class="hide">
+  <div class="row"><input class="q" id="shopQ" placeholder="Search the shop" autocomplete="off"><button class="chip" id="wishOnly" aria-pressed="false">Wishlist only</button><button class="chip" id="newOnly" aria-pressed="false">New only</button></div>
+  <p class="note" id="shopNote"></p>
+  <div id="shopSections"></div>
+ </section>
+ <section id="tab-feed" class="hide">
+  <div class="chips" id="feedChips"><button class="chip" data-k="all" aria-pressed="true">All</button><button class="chip" data-k="leaks" aria-pressed="false">Leaks</button><button class="chip" data-k="news" aria-pressed="false">News</button><button class="chip" data-k="video" aria-pressed="false">Videos</button><button class="chip" data-k="status" aria-pressed="false">Status</button></div>
+  <div class="list" id="feedList"></div>
+ </section>
+ <section id="tab-trackers" class="hide">
+  <div class="chips" id="trackerChips"></div>
+  <div id="trackerBody"></div>
+  <p class="note">Progress saves in this browser. The full Sprite Vault page with mastery rewards is <a href="sprites.html">here</a> (it keeps its own saved progress).</p>
+ </section>
+</main>
+<script>
+const TRACKERS=[['sprites','Sprites'],['admin_codes','Admin Panel Codes']];
+const $=s=>document.querySelector(s);
+const ET={timeZone:'America/New_York'};
+const fmtT=d=>new Date(d).toLocaleString('en-US',{...ET,month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+const ago=d=>{const m=Math.round((Date.now()-new Date(d))/60000);if(m<60)return m+'m';const h=Math.round(m/60);if(h<48)return h+'h';return Math.round(h/24)+'d'};
+const daysAgo=iso=>Math.round((Date.now()-new Date(iso+'T00:00:00Z'))/864e5);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k)||'null');localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
+let wish=new Set(store('fcc:wish')||[]);
+const J=async p=>{try{return await (await fetch(p+'?t='+Math.floor(Date.now()/60000))).json()}catch(e){return null}};
+
+// tabs
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x==b));document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!='tab-'+b.dataset.tab));location.hash=b.dataset.tab});
+if(location.hash){const b=document.querySelector(`nav button[data-tab="${location.hash.slice(1)}"]`);b&&b.click()}
+
+// countdowns
+function nextUTC(h){const d=new Date();d.setUTCHours(h,0,0,0);if(d<=Date.now())d.setUTCDate(d.getUTCDate()+1);return d}
+function nextThu13Z(){const d=new Date();d.setUTCHours(13,0,0,0);while(d.getUTCDay()!=4||d<=Date.now())d.setUTCDate(d.getUTCDate()+1);return d} // ponytail: 9 AM ET = 13Z until the Nov clock change (then 14Z)
+const left=t=>{let s=Math.max(0,(t-Date.now())/1000|0);const d=s/86400|0;s%=86400;const h=s/3600|0,m=(s%3600)/60|0;return (d?d+'d ':'')+h+'h '+String(m).padStart(2,'0')+'m'};
+
+let SHOP,FEED,STATUS,NEWS;
+function renderToday(){
+ const sr=$('#statusRow');sr.innerHTML='';
+ if(STATUS){const ok=STATUS.overall.indicator=='none';sr.insertAdjacentHTML('beforeend',`<span class="pill ${ok?'ok':STATUS.overall.indicator=='critical'||STATUS.overall.indicator=='major'?'bad':'warn'}"><i></i>${esc(STATUS.overall.description)}</span>`);
+  STATUS.components.filter(c=>c.status!='operational').forEach(c=>sr.insertAdjacentHTML('beforeend',`<span class="pill warn"><i></i>${esc(c.name)}: ${esc(c.status.replace(/_/g,' '))}</span>`));
+  STATUS.incidents.forEach(i=>sr.insertAdjacentHTML('beforeend',`<a class="pill bad" href="${esc(i.url)}" target="_blank" rel="noopener"><i></i>${esc(i.name)}</a>`))}
+ const reset=nextUTC(0),quest=nextThu13Z();
+ $('#tiles').innerHTML=`<div class="tile"><div class="k">Shop resets in</div><div class="v" data-cd="${reset.getTime()}">${left(reset)}</div><div class="s">${fmtT(reset)} ET</div></div>
+ <div class="tile"><div class="k">Weekly quests drop in</div><div class="v" data-cd="${quest.getTime()}">${left(quest)}</div><div class="s">Thursdays 9:00 AM ET</div></div>
+ <div class="tile"><div class="k">In the shop</div><div class="v">${SHOP?SHOP.count:'-'}</div><div class="s">${SHOP?SHOP.entries.filter(e=>e.isNew).length+' new · '+SHOP.entries.filter(e=>leaving(e)).length+' leaving today':''}</div></div>
+ <div class="tile"><div class="k">Wishlist in shop</div><div class="v">${SHOP?SHOP.entries.filter(e=>wish.has(e.items[0])).length:'-'}</div><div class="s">${wish.size} wishlisted</div></div>`;
+ if(SHOP){const w=SHOP.entries.filter(e=>wish.has(e.items[0]));$('#wishToday').innerHTML=w.length?`<h2 class="sec">Your wishlist is in the shop</h2><div class="grid">${w.map(card).join('')}</div>`:'';
+  const n=SHOP.entries.filter(e=>e.isNew);$('#newCount').textContent=n.length+(SHOP.entries.every(e=>e.isNew)?' (first day of tracking, everything counts as new)':'');$('#newToday').innerHTML=n.slice(0,24).map(card).join('')}
+ if(FEED){const day=Date.now()-864e5;$('#headlines').innerHTML=FEED.items.filter(i=>i.when&&new Date(i.when)>day).slice(0,10).map(feedItem).join('')||'<p class="note">Nothing in the last 24 hours.</p>'}
+ if(NEWS)$('#epicNews').innerHTML=NEWS.items.map(n=>`<a class="item thumb" ${n.url?`href="${esc(n.url)}" target="_blank" rel="noopener"`:''}>${n.img?`<img src="${esc(n.img)}" alt="">`:'<span></span>'}<span class="t">${esc(n.title)}</span><span></span><span class="m">${esc(n.body)}</span></a>`).join('');
+ bindStars()}
+setInterval(()=>document.querySelectorAll('[data-cd]').forEach(e=>e.textContent=left(+e.dataset.cd)),30000);
+
+const leaving=e=>e.out&&new Date(e.out)-Date.now()<864e5;
+function card(e){const id=e.items[0],ls=e.lastSeen?daysAgo(e.lastSeen):null;
+ return `<article class="card ${wish.has(id)?'wish':''}" style="--rc:var(--${esc(e.rarity)},var(--line))" data-id="${esc(id)}">
+ ${e.isNew?'<span class="badge">New</span>':leaving(e)?'<span class="badge leaving">Leaving</span>':ls&&ls>60?'<span class="badge back">Back</span>':''}
+ <button class="star" aria-pressed="${wish.has(id)}" aria-label="Wishlist">&#9733;</button>
+ ${e.img?`<img src="${esc(e.img)}" alt="" loading="lazy">`:'<div style="aspect-ratio:1"></div>'}
+ <h3>${esc(e.bundle||e.name)}</h3>
+ <div class="p">${e.regular!=e.price?`<s>${e.regular}</s>`:''}${e.price} V</div>
+ <div class="meta">${esc(e.type)}${e.series?' · '+esc(e.series):''}<br>${ls!=null?`Last seen ${ls}d ago`:e.appearances>1?`Seen ${e.appearances}x`:'First appearance we have seen'} · leaves ${fmtT(e.out)}</div></article>`}
+function bindStars(){document.querySelectorAll('.star').forEach(b=>b.onclick=ev=>{ev.preventDefault();const id=b.closest('.card').dataset.id;wish.has(id)?wish.delete(id):wish.add(id);store('fcc:wish',[...wish]);renderShop();renderToday()})}
+
+function renderShop(){if(!SHOP)return;const q=($('#shopQ').value||'').toLowerCase(),wo=$('#wishOnly').getAttribute('aria-pressed')=='true',no=$('#newOnly').getAttribute('aria-pressed')=='true';
+ $('#shopNote').textContent=`Shop for ${SHOP.date} (resets 8:00 PM ET). Last seen and New come from our own daily snapshots starting today, so they get smarter every day.`;
+ const secs={};SHOP.entries.forEach(e=>{if(wo&&!wish.has(e.items[0]))return;if(no&&!e.isNew)return;if(q&&!(e.name+' '+(e.bundle||'')+' '+e.type+' '+(e.section||'')).toLowerCase().includes(q))return;(secs[e.section||'Other']=secs[e.section||'Other']||[]).push(e)});
+ $('#shopSections').innerHTML=Object.entries(secs).map(([s,es])=>`<h2 class="sec">${esc(s)} <small>${es.length}</small></h2><div class="grid">${es.map(card).join('')}</div>`).join('')||'<p class="note">Nothing matches.</p>';bindStars()}
+$('#shopQ').oninput=renderShop;['#wishOnly','#newOnly'].forEach(s=>$(s).onclick=()=>{$(s).setAttribute('aria-pressed',$(s).getAttribute('aria-pressed')!='true');renderShop()});
+
+const feedItem=i=>`<a class="item ${i.img?'thumb':''}" href="${esc(i.url)}" target="_blank" rel="noopener">${i.img?`<img src="${esc(i.img)}" alt="" loading="lazy">`:''}<span class="t"><span class="src ${esc(i.kind)}">${esc(i.src)}</span>${esc(i.title)}</span><span class="w">${i.when?ago(i.when):''}</span>${i.body&&i.kind!='video'?`<span class="m">${esc(i.body)}</span>`:''}</a>`;
+let fk='all';function renderFeed(){if(!FEED)return;$('#feedList').innerHTML=FEED.items.filter(i=>fk=='all'||i.kind==fk).slice(0,150).map(feedItem).join('')}
+document.querySelectorAll('#feedChips .chip').forEach(b=>b.onclick=()=>{fk=b.dataset.k;document.querySelectorAll('#feedChips .chip').forEach(x=>x.setAttribute('aria-pressed',x==b));renderFeed()});
+
+// trackers: generic IGN checklist renderer. One toggle per task; state keyed by IGN task id.
+let TR={},cur=TRACKERS[0][0];
+$('#trackerChips').innerHTML=TRACKERS.map(([s,t])=>`<button class="chip" data-s="${s}" aria-pressed="${s==cur}">${t}</button>`).join('');
+document.querySelectorAll('#trackerChips .chip').forEach(b=>b.onclick=()=>{cur=b.dataset.s;document.querySelectorAll('#trackerChips .chip').forEach(x=>x.setAttribute('aria-pressed',x==b));renderTracker()});
+async function renderTracker(){const t=TR[cur]||(TR[cur]=await J(`trackers/${cur}.json`));if(!t){$('#trackerBody').innerHTML='<p class="note">Tracker data not loaded.</p>';return}
+ const S=store('fcc:tr:'+cur)||{};const ids=t.groups.flatMap(g=>g.items.flatMap(i=>i.ids));const done=ids.filter(i=>S[i]).length;
+ const RC={Rare:'var(--rare)',Epic:'var(--epic)',Legendary:'var(--legendary)',Mythic:'var(--mythic)',Uncommon:'var(--uncommon)'};
+ $('#trackerBody').innerHTML=`<h2 class="sec">${esc(t.title)} <small>${done}/${ids.length} checked</small></h2><div class="bar"><i style="width:${ids.length?done/ids.length*100:0}%"></i></div>`+
+  t.groups.map(g=>{const rc=RC[(g.items[0]||{}).lines?.[1]]||'var(--line)';return `<h2 class="sec">${esc(g.group)} <small>${g.items.filter(i=>i.ids.every(x=>S[x])).length}/${g.items.length}</small></h2><div class="grid">${g.items.map(i=>`<article class="card ${i.ids.every(x=>S[x])?'done':''}" style="--rc:${rc}">${i.img?`<img src="${i.img}" alt="" loading="lazy">`:''}<h3>${esc(i.name.replace(/ Sprite$/,''))}</h3>${i.lines.length>2?`<div class="meta">${esc(i.lines.slice(2).join(' '))}</div>`:''}<div class="tg">${i.ids.map((id,k)=>`<button data-id="${id}" class="${/master/i.test(i.tasks[k])?'m':''}" aria-pressed="${!!S[id]}">${esc(i.tasks.length>1?(i.tasks[k].replace(i.name,'').trim()||'Got it'):'Done')}</button>`).join('')}</div></article>`).join('')}</div>`}).join('');
+ $('#trackerBody').querySelectorAll('.tg button').forEach(b=>b.onclick=()=>{S[b.dataset.id]=!S[b.dataset.id];store('fcc:tr:'+cur,S);renderTracker()})}
+
+(async()=>{[SHOP,FEED,STATUS,NEWS]=await Promise.all([J('data/shop.json'),J('data/feed.json'),J('data/status.json'),J('data/news.json')]);
+ const meta=await J('data/meta.json');$('#upd').textContent=meta?'updated '+fmtT(meta.fetched)+' ET':'data not loaded';
+ renderToday();renderShop();renderFeed();renderTracker()})();
+</script>
+</body>
+</html>
