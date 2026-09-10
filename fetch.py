@@ -89,8 +89,8 @@ def news():
 
 # ---------- RSS / Atom merge ----------
 FEEDS = [
-    ("leaks",  "r/FortniteLeaks", "https://www.reddit.com/r/FortniteLeaks/new.rss?limit=25"),
-    ("news",   "r/FortNiteBR",    "https://www.reddit.com/r/FortNiteBR/new.rss?limit=25"),
+    # one multireddit call: reddit 429s a second hit from the same client; entries carry <category term=subreddit>
+    ("news",   "reddit",          "https://www.reddit.com/r/FortNiteBR+FortniteLeaks/new.rss?limit=50"),
     ("video",  "HYPEX",           "https://www.youtube.com/feeds/videos.xml?channel_id=UCR91MC-1uTn10J7bh-V-OqQ"),
     ("video",  "ShiinaBR",        "https://www.youtube.com/feeds/videos.xml?channel_id=UCBenOYHG3jne-zqHJYn5sxQ"),
     ("video",  "iFireMonkey",     "https://www.youtube.com/feeds/videos.xml?channel_id=UCOt3tWBRi4HTFce3jGMukiQ"),
@@ -126,7 +126,10 @@ def parse_feed(kind, src, raw):
             url = link.get("href") if link is not None else ""
             thumb = e.find("m:group/m:thumbnail", NS)
             body = _text(e, "a:content", "a:summary", "m:group/m:description")
-            out.append({"kind": kind, "src": src, "title": _text(e, "a:title"), "url": url,
+            cat = e.find("a:category", NS)
+            sub = (cat.get("term") if cat is not None else "") or ""
+            k, sname = (("leaks", "r/FortniteLeaks") if "leaks" in sub.lower() else ("news", "r/FortNiteBR")) if src == "reddit" else (kind, src)
+            out.append({"kind": k, "src": sname, "title": _text(e, "a:title"), "url": url,
                         "when": _text(e, "a:published", "a:updated"),
                         "img": thumb.get("url") if thumb is not None else _img(body),
                         "body": _strip(body)[:280]})
@@ -153,14 +156,22 @@ def feed():
     items = {}
     for kind, src, url in FEEDS:
         try:
-            for it in parse_feed(kind, src, get(url)):
+            parsed = None
+            for u in url.split("|"):                 # alternates: first that answers AND parses wins
+                try:
+                    parsed = parse_feed(kind, src, get(u)); break
+                except Exception as ex:
+                    print(f"feed retry {src}: {ex}"); time.sleep(10)
+            if parsed is None:
+                raise RuntimeError("all alternates failed")
+            for it in parsed:
                 items[it["id"]] = it
         except Exception as ex:
             print(f"feed FAIL {src}: {ex}")
             for k, v in old.items():
                 if v["src"] == src:
                     items[k] = v
-        time.sleep(2)  # reddit 429s on back-to-back hits
+        time.sleep(6)  # reddit 429s on back-to-back hits
     merged = sorted(items.values(), key=lambda x: x["when"] or "", reverse=True)[:400]
     save("feed.json", {"fetched": iso(datetime.now(timezone.utc)), "items": merged})
 

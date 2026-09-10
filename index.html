@@ -103,7 +103,7 @@ const TRACKERS=[['sprites','Sprites'],['admin_codes','Admin Panel Codes']];
 const $=s=>document.querySelector(s);
 const ET={timeZone:'America/New_York'};
 const fmtT=d=>new Date(d).toLocaleString('en-US',{...ET,month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-const ago=d=>{const m=Math.round((Date.now()-new Date(d))/60000);if(m<60)return m+'m';const h=Math.round(m/60);if(h<48)return h+'h';return Math.round(h/24)+'d'};
+const ago=d=>{let m=Math.round((Date.now()-new Date(d))/60000);const f=m<0;m=Math.abs(m);const s=m<60?m+'m':m<2880?Math.round(m/60)+'h':Math.round(m/1440)+'d';return f?'in '+s:s};
 const daysAgo=iso=>Math.round((Date.now()-new Date(iso+'T00:00:00Z'))/864e5);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const store=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k)||'null');localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
@@ -132,7 +132,7 @@ function renderToday(){
  <div class="tile"><div class="k">Wishlist in shop</div><div class="v">${SHOP?SHOP.entries.filter(e=>wish.has(e.items[0])).length:'-'}</div><div class="s">${wish.size} wishlisted</div></div>`;
  if(SHOP){const w=SHOP.entries.filter(e=>wish.has(e.items[0]));$('#wishToday').innerHTML=w.length?`<h2 class="sec">Your wishlist is in the shop</h2><div class="grid">${w.map(card).join('')}</div>`:'';
   const n=SHOP.entries.filter(e=>e.isNew);$('#newCount').textContent=n.length+(SHOP.entries.every(e=>e.isNew)?' (first day of tracking, everything counts as new)':'');$('#newToday').innerHTML=n.slice(0,24).map(card).join('')}
- if(FEED){const day=Date.now()-864e5;$('#headlines').innerHTML=FEED.items.filter(i=>i.when&&new Date(i.when)>day).slice(0,10).map(feedItem).join('')||'<p class="note">Nothing in the last 24 hours.</p>'}
+ if(FEED){const day=Date.now()-864e5;$('#headlines').innerHTML=FEED.items.filter(i=>i.when&&new Date(i.when)>day&&new Date(i.when)<=Date.now()).slice(0,10).map(feedItem).join('')||'<p class="note">Nothing in the last 24 hours.</p>'}
  if(NEWS)$('#epicNews').innerHTML=NEWS.items.map(n=>`<a class="item thumb" ${n.url?`href="${esc(n.url)}" target="_blank" rel="noopener"`:''}>${n.img?`<img src="${esc(n.img)}" alt="">`:'<span></span>'}<span class="t">${esc(n.title)}</span><span></span><span class="m">${esc(n.body)}</span></a>`).join('');
  bindStars()}
 setInterval(()=>document.querySelectorAll('[data-cd]').forEach(e=>e.textContent=left(+e.dataset.cd)),30000);
@@ -166,7 +166,7 @@ async function renderTracker(){const t=TR[cur]||(TR[cur]=await J(`trackers/${cur
  const S=store('fcc:tr:'+cur)||{};const ids=t.groups.flatMap(g=>g.items.flatMap(i=>i.ids));const done=ids.filter(i=>S[i]).length;
  const RC={Rare:'var(--rare)',Epic:'var(--epic)',Legendary:'var(--legendary)',Mythic:'var(--mythic)',Uncommon:'var(--uncommon)'};
  $('#trackerBody').innerHTML=`<h2 class="sec">${esc(t.title)} <small>${done}/${ids.length} checked</small></h2><div class="bar"><i style="width:${ids.length?done/ids.length*100:0}%"></i></div>`+
-  t.groups.map(g=>{const rc=RC[(g.items[0]||{}).lines?.[1]]||'var(--line)';return `<h2 class="sec">${esc(g.group)} <small>${g.items.filter(i=>i.ids.every(x=>S[x])).length}/${g.items.length}</small></h2><div class="grid">${g.items.map(i=>`<article class="card ${i.ids.every(x=>S[x])?'done':''}" style="--rc:${rc}">${i.img?`<img src="${i.img}" alt="" loading="lazy">`:''}<h3>${esc(i.name.replace(/ Sprite$/,''))}</h3>${i.lines.length>2?`<div class="meta">${esc(i.lines.slice(2).join(' '))}</div>`:''}<div class="tg">${i.ids.map((id,k)=>`<button data-id="${id}" class="${/master/i.test(i.tasks[k])?'m':''}" aria-pressed="${!!S[id]}">${esc(i.tasks.length>1?(i.tasks[k].replace(i.name,'').trim()||'Got it'):'Done')}</button>`).join('')}</div></article>`).join('')}</div>`}).join('');
+  t.groups.map(g=>{const f=g.items[0]||{};const rc=(f.lines?.[0]===f.name&&RC[f.lines?.[1]])||'var(--line)';return `<h2 class="sec">${esc(g.group)} <small>${g.items.filter(i=>i.ids.every(x=>S[x])).length}/${g.items.length}</small></h2><div class="grid">${g.items.map(i=>`<article class="card ${i.ids.every(x=>S[x])?'done':''}" style="--rc:${rc}">${i.img?`<img src="${i.img}" alt="" loading="lazy">`:''}<h3>${esc(i.name.replace(/ Sprite$/,''))}</h3>${(x=>x.length?`<div class="meta">${esc(x.join(' · '))}</div>`:'')(i.lines[0]===i.name?i.lines.slice(2):i.lines)}<div class="tg">${i.ids.map((id,k)=>`<button data-id="${id}" class="${/master/i.test(i.tasks[k])?'m':''}" aria-pressed="${!!S[id]}">${esc(i.tasks.length>1?(i.tasks[k].replace(i.name,'').trim()||'Got it'):'Done')}</button>`).join('')}</div></article>`).join('')}</div>`}).join('');
  $('#trackerBody').querySelectorAll('.tg button').forEach(b=>b.onclick=()=>{S[b.dataset.id]=!S[b.dataset.id];store('fcc:tr:'+cur,S);renderTracker()})}
 
 (async()=>{[SHOP,FEED,STATUS,NEWS]=await Promise.all([J('data/shop.json'),J('data/feed.json'),J('data/status.json'),J('data/news.json')]);
