@@ -89,8 +89,8 @@ def news():
 
 # ---------- RSS / Atom merge ----------
 FEEDS = [
-    # one multireddit call: reddit 429s a second hit from the same client; entries carry <category term=subreddit>
-    ("news",   "reddit",          "https://www.reddit.com/r/FortNiteBR+FortniteLeaks/new.rss?limit=50"),
+    ("leaks",  "r/FortniteLeaks", "https://www.reddit.com/r/FortniteLeaks/new.rss?limit=25"),
+    ("news",   "r/FortNiteBR",    "https://www.reddit.com/r/FortNiteBR/new.rss?limit=25"),
     ("video",  "HYPEX",           "https://www.youtube.com/feeds/videos.xml?channel_id=UCR91MC-1uTn10J7bh-V-OqQ"),
     ("video",  "ShiinaBR",        "https://www.youtube.com/feeds/videos.xml?channel_id=UCBenOYHG3jne-zqHJYn5sxQ"),
     ("video",  "iFireMonkey",     "https://www.youtube.com/feeds/videos.xml?channel_id=UCOt3tWBRi4HTFce3jGMukiQ"),
@@ -157,6 +157,8 @@ def feed():
     for kind, src, url in FEEDS:
         try:
             parsed = None
+            if "reddit.com" in url and any(k for k in items if items[k]["src"].startswith("r/")):
+                time.sleep(61)                       # reddit: one unauthenticated RSS hit per minute per client
             for u in url.split("|"):                 # alternates: first that answers AND parses wins
                 try:
                     parsed = parse_feed(kind, src, get(u)); break
